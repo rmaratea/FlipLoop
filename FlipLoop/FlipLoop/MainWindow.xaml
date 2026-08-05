@@ -107,8 +107,11 @@
         <Grid Background="#2B2B2B">
 
             <controls:WaveformControl
-                x:Name="Waveform"
-                Margin="10"/>
+    x:Name="Waveform"
+    Grid.Row="1"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    Margin="10"/>
 
         </Grid>
 
