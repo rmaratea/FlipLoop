@@ -1,92 +1,132 @@
 ﻿<Window x:Class="FlipLoop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:FlipLoop.Controls"
+        mc:Ignorable="d"
         Title="FlipLoop"
-        Height="720"
-        Width="1200"
+        Width="1280"
+        Height="800"
+        MinWidth="900"
+        MinHeight="600"
         WindowStartupLocation="CenterScreen"
         AllowDrop="True"
-        Drop="Window_Drop"
-        DragEnter="Window_DragEnter">
+        DragEnter="Window_DragEnter"
+        Drop="Window_Drop">
 
-    <DockPanel>
+    <DockPanel LastChildFill="True">
+
+        <!-- ========================= -->
+        <!-- Menu -->
+        <!-- ========================= -->
 
         <Menu DockPanel.Dock="Top">
 
             <MenuItem Header="_File">
 
-                <MenuItem Header="Apri..."
+                <MenuItem Header="_Apri..."
                           Click="Open_Click"/>
 
                 <Separator/>
 
-                <MenuItem Header="Esci"
+                <MenuItem Header="_Esci"
                           Click="Exit_Click"/>
 
             </MenuItem>
 
         </Menu>
 
+        <!-- ========================= -->
+        <!-- Toolbar -->
+        <!-- ========================= -->
+
         <ToolBar DockPanel.Dock="Top">
 
-            <Button Content="Apri"
-                    Width="80"
+            <Button Width="80"
+                    Content="Apri"
                     Click="Open_Click"/>
 
             <Separator/>
 
             <TextBlock Text="BPM:"
-                       Margin="10,0,4,0"
-                       VerticalAlignment="Center"/>
+                       VerticalAlignment="Center"
+                       Margin="10,0,4,0"/>
 
             <TextBlock x:Name="BpmLabel"
-                       Text="--"
-                       Width="60"/>
+                       Width="60"
+                       VerticalAlignment="Center"
+                       Text="--"/>
 
             <Separator/>
 
             <CheckBox x:Name="GhostPlayCheck"
-                      Content="Ghost Play"/>
+                      Content="Ghost Play"
+                      VerticalAlignment="Center"/>
 
         </ToolBar>
 
-        <Grid>
+        <!-- ========================= -->
+        <!-- Barra informazioni -->
+        <!-- ========================= -->
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <Border DockPanel.Dock="Top"
+                Background="#202020"
+                Padding="8">
 
-            <StackPanel
-        Grid.Row="0"
-        Orientation="Horizontal"
-        Margin="10">
+            <Grid>
 
-                <TextBlock
-            Text="File:"
-            FontWeight="Bold"/>
+                <Grid.ColumnDefinitions>
 
-                <TextBlock
-            x:Name="FileNameLabel"
-            Margin="5,0,20,0"/>
+                    <ColumnDefinition Width="Auto"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                </Grid.ColumnDefinitions>
 
                 <TextBlock
-            Text="Info:"
-            FontWeight="Bold"/>
+                    Text="File:"
+                    Foreground="White"
+                    FontWeight="SemiBold"/>
 
                 <TextBlock
-            x:Name="InfoLabel"
-            Margin="5,0,0,0"/>
+                    x:Name="FileNameLabel"
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    Foreground="White"
+                    Text="Nessun file aperto"/>
 
-            </StackPanel>
+            </Grid>
+
+        </Border>
+
+        <!-- ========================= -->
+        <!-- Waveform -->
+        <!-- ========================= -->
+
+        <Grid Background="#2B2B2B">
 
             <controls:WaveformControl
-        x:Name="Waveform"
-        Grid.Row="1"
-        Margin="10"/>
+                x:Name="Waveform"
+                Margin="10"/>
 
         </Grid>
+
+        <!-- ========================= -->
+        <!-- StatusBar -->
+        <!-- ========================= -->
+
+        <StatusBar DockPanel.Dock="Bottom">
+
+            <StatusBarItem>
+
+                <TextBlock
+                    x:Name="StatusText"
+                    Text="Pronto"/>
+
+            </StatusBarItem>
+
+        </StatusBar>
 
     </DockPanel>
 

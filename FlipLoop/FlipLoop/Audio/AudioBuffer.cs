@@ -1,8 +1,8 @@
-﻿namespace FlipLoop.Audio;
+namespace FlipLoop.Audio;
 
-public class AudioBuffer
+public sealed class AudioBuffer
 {
-    public string FileName { get; init; } = "";
+    public string FileName { get; init; } = string.Empty;
 
     public float[] Left { get; init; } = [];
 

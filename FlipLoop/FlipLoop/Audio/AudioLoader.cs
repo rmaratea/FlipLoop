@@ -1,5 +1,5 @@
-﻿using NAudio.Wave;
 using System.IO;
+using NAudio.Wave;
 
 namespace FlipLoop.Audio;
 
@@ -7,12 +7,12 @@ public static class AudioLoader
 {
     public static AudioBuffer Load(string path)
     {
-        using AudioFileReader reader = new(path);
+        using var reader = new AudioFileReader(path);
 
-        List<float> left = new();
-        List<float> right = new();
+        var left = new List<float>();
+        var right = new List<float>();
 
-        float[] buffer = new float[4096];
+        var buffer = new float[4096];
 
         int read;
 
@@ -21,9 +21,7 @@ public static class AudioLoader
             if (reader.WaveFormat.Channels == 1)
             {
                 for (int i = 0; i < read; i++)
-                {
                     left.Add(buffer[i]);
-                }
             }
             else
             {
@@ -38,20 +36,14 @@ public static class AudioLoader
         }
 
         if (reader.WaveFormat.Channels == 1)
-        {
-            right = new List<float>(left);
-        }
+            right.AddRange(left);
 
         return new AudioBuffer
         {
             FileName = Path.GetFileName(path),
-
             Left = left.ToArray(),
-
             Right = right.ToArray(),
-
             SampleRate = reader.WaveFormat.SampleRate,
-
             Channels = reader.WaveFormat.Channels
         };
     }

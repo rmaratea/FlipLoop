@@ -1,13 +1,15 @@
-﻿using Microsoft.Win32;
-using System.Windows;
 using FlipLoop.Audio;
+using Microsoft.Win32;
+using System;
 using System.IO;
+using System.Windows;
 
 namespace FlipLoop;
 
 public partial class MainWindow : Window
 {
-    private AudioBuffer? _buffer;
+
+    private readonly AudioEngine _engine = new();
 
     public MainWindow()
     {
@@ -16,41 +18,15 @@ public partial class MainWindow : Window
 
     private void Open_Click(object sender, RoutedEventArgs e)
     {
-        OpenFileDialog dlg = new();
-
-        dlg.Filter = "Audio|*.wav;*.mp3";
+        var dlg = new OpenFileDialog
+        {
+            Filter = "Audio Files|*.wav;*.mp3"
+        };
 
         if (dlg.ShowDialog() == true)
         {
             LoadAudio(dlg.FileName);
         }
-    }
-
-    private void Window_DragEnter(object sender, DragEventArgs e)
-    {
-        if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            e.Effects = DragDropEffects.Copy;
-        else
-            e.Effects = DragDropEffects.None;
-    }
-
-    private void Window_Drop(object sender, DragEventArgs e)
-    {
-        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
-            return;
-
-        string[] files =
-            (string[])e.Data.GetData(DataFormats.FileDrop)!;
-
-        if (files.Length == 0)
-            return;
-
-        string ext = Path.GetExtension(files[0]).ToLowerInvariant();
-
-        if (ext != ".mp3" && ext != ".wav")
-            return;
-
-        LoadAudio(files[0]);
     }
 
     private void Exit_Click(object sender, RoutedEventArgs e)
@@ -62,18 +38,23 @@ public partial class MainWindow : Window
     {
         try
         {
-            _buffer = AudioLoader.Load(file);
+            _engine.Load(file);
 
-            FileNameLabel.Text = _buffer.FileName;
+            if (_engine.CurrentBuffer == null)
+                return;
 
-            InfoLabel.Text =
-                $"{_buffer.Duration:mm\\:ss\\.fff}   " +
-                $"{_buffer.SampleRate} Hz   " +
-                $"{_buffer.Channels} canali";
+            var buffer = _engine.CurrentBuffer;
 
-            Waveform.AudioBuffer = _buffer;
+            FileNameLabel.Text = buffer.FileName;
 
-            Waveform.InvalidateVisual();
+            StatusText.Text =
+                $"{buffer.Duration:mm\\:ss\\.fff}    " +
+                $"{buffer.SampleRate} Hz    " +
+                $"{buffer.Channels} ch";
+
+            Waveform.AudioBuffer = buffer;
+
+            BpmLabel.Text = "--";
         }
         catch (Exception ex)
         {
@@ -85,4 +66,30 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Window_DragEnter(object sender, DragEventArgs e)
+    {
+        e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+            ? DragDropEffects.Copy
+            : DragDropEffects.None;
+
+        e.Handled = true;
+    }
+
+    private void Window_Drop(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            return;
+
+        var files = (string[])e.Data.GetData(DataFormats.FileDrop)!;
+
+        if (files.Length == 0)
+            return;
+
+        var ext = Path.GetExtension(files[0]).ToLowerInvariant();
+
+        if (ext is ".wav" or ".mp3")
+        {
+            LoadAudio(files[0]);
+        }
+    }
 }

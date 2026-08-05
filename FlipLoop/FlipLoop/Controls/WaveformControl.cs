@@ -1,6 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Media;
 using FlipLoop.Audio;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Media;
 
 namespace FlipLoop.Controls;
 
@@ -25,79 +26,50 @@ public class WaveformControl : FrameworkElement
     {
         base.OnRender(dc);
 
-        dc.DrawRectangle(
-            Brushes.Black,
-            null,
-            new Rect(0, 0, ActualWidth, ActualHeight));
+        dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(30,30,30)), null,
+            new Rect(0,0,ActualWidth,ActualHeight));
 
-        if (AudioBuffer == null)
-        {
-            DrawCenteredText(dc, "Trascina un file audio");
+        if (ActualWidth < 2 || ActualHeight < 2)
             return;
-        }
 
-        DrawWaveform(dc);
-    }
-
-    private void DrawWaveform(DrawingContext dc)
-    {
-        double centerY = ActualHeight / 2;
-
-        Pen pen = new Pen(Brushes.Lime, 1);
-
-        float[] samples = AudioBuffer!.Left;
-
-        double samplesPerPixel =
-            (double)samples.Length / ActualWidth;
-
-        for (int x = 0; x < ActualWidth; x++)
+        if (AudioBuffer is null)
         {
-            int start = (int)(x * samplesPerPixel);
-            int end = (int)((x + 1) * samplesPerPixel);
-
-            if (end > samples.Length)
-                end = samples.Length;
-
-            float min = 1f;
-            float max = -1f;
-
-            for (int i = start; i < end; i++)
-            {
-                float s = samples[i];
-
-                if (s < min)
-                    min = s;
-
-                if (s > max)
-                    max = s;
-            }
-
-            double y1 = centerY - max * centerY;
-            double y2 = centerY - min * centerY;
-
-            dc.DrawLine(
-                pen,
-                new Point(x, y1),
-                new Point(x, y2));
-        }
-    }
-
-    private void DrawCenteredText(DrawingContext dc, string text)
-    {
-        FormattedText ft =
-            new(
-                text,
-                System.Globalization.CultureInfo.InvariantCulture,
+            var ft = new FormattedText(
+                "Apri o trascina un file audio",
+                CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"),
-                20,
+                18,
                 Brushes.Gray,
                 VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
-        dc.DrawText(
-            ft,
-            new Point(
-                (ActualWidth - ft.Width) / 2,
-                (ActualHeight - ft.Height) / 2));
+            dc.DrawText(ft,new Point((ActualWidth-ft.Width)/2,(ActualHeight-ft.Height)/2));
+            return;
+        }
+
+        var samples = AudioBuffer.Left;
+        double spp = Math.Max(1.0, samples.Length / ActualWidth);
+        double cy = ActualHeight / 2;
+        var pen = new Pen(Brushes.Lime,1);
+
+        for(int x=0;x<(int)ActualWidth;x++)
+        {
+            int start=(int)(x*spp);
+            int end=Math.Min(samples.Length,(int)((x+1)*spp));
+
+            float min=1,max=-1;
+
+            for(int i=start;i<end;i++)
+            {
+                float s=samples[i];
+                if(s<min) min=s;
+                if(s>max) max=s;
+            }
+
+            dc.DrawLine(
+                pen,
+                new Point(x, cy-max*cy),
+                new Point(x, cy-min*cy));
+        }
     }
 }
