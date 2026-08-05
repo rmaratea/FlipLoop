@@ -3,6 +3,7 @@ using FlipLoop.Audio;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace FlipLoop.Controls;
@@ -10,7 +11,39 @@ namespace FlipLoop.Controls;
 public class WaveformControl : FrameworkElement
 {
     private static readonly Brush BackgroundBrush;
+    
     private static readonly Pen WavePen;
+    
+    private bool _dragging;
+
+    private Point _mouseDown;
+
+    private Point _mouseCurrent;
+
+
+
+    public long LoopStartSample { get; private set; }
+
+    public long LoopEndSample { get; private set; }
+
+    public bool HasSelection =>
+        LoopEndSample > LoopStartSample;
+
+    public AudioBuffer? AudioBuffer
+    {
+        get => (AudioBuffer?)GetValue(AudioBufferProperty);
+        set => SetValue(AudioBufferProperty, value);
+    }
+
+    public static readonly DependencyProperty AudioBufferProperty =
+        DependencyProperty.Register(
+            nameof(AudioBuffer),
+            typeof(AudioBuffer),
+            typeof(WaveformControl),
+            new FrameworkPropertyMetadata(
+                null,
+                FrameworkPropertyMetadataOptions.AffectsRender));
+
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -36,20 +69,73 @@ public class WaveformControl : FrameworkElement
         WavePen = pen;
     }
 
-    public AudioBuffer? AudioBuffer
+    public WaveformControl()
     {
-        get => (AudioBuffer?)GetValue(AudioBufferProperty);
-        set => SetValue(AudioBufferProperty, value);
+        MouseLeftButtonDown += OnMouseLeftButtonDown;
+        MouseMove += OnMouseMove;
+        MouseLeftButtonUp += OnMouseLeftButtonUp;
     }
 
-    public static readonly DependencyProperty AudioBufferProperty =
-        DependencyProperty.Register(
-            nameof(AudioBuffer),
-            typeof(AudioBuffer),
-            typeof(WaveformControl),
-            new FrameworkPropertyMetadata(
-                null,
-                FrameworkPropertyMetadataOptions.AffectsRender));
+    private void OnMouseLeftButtonDown(object sender,
+                                   MouseButtonEventArgs e)
+    {
+        if (AudioBuffer == null)
+            return;
+
+        CaptureMouse();
+
+        _dragging = true;
+
+        _mouseDown = e.GetPosition(this);
+
+        _mouseCurrent = _mouseDown;
+    }
+
+    private void OnMouseMove(object sender,
+                         MouseEventArgs e)
+    {
+        if (!_dragging)
+            return;
+
+        _mouseCurrent = e.GetPosition(this);
+
+        InvalidateVisual();
+    }
+
+    private void OnMouseLeftButtonUp(object sender,
+                                 MouseButtonEventArgs e)
+    {
+        if (!_dragging)
+            return;
+
+        ReleaseMouseCapture();
+
+        _dragging = false;
+
+        _mouseCurrent = e.GetPosition(this);
+
+        long s1 = PixelToSample(_mouseDown.X);
+
+        long s2 = PixelToSample(_mouseCurrent.X);
+
+        LoopStartSample = Math.Min(s1, s2);
+
+        LoopEndSample = Math.Max(s1, s2);
+
+        InvalidateVisual();
+    }
+
+    private long PixelToSample(double x)
+    {
+        if (AudioBuffer == null)
+            return 0;
+
+        x = Math.Clamp(x, 0, ActualWidth);
+
+        double ratio = x / ActualWidth;
+
+        return (long)(ratio * AudioBuffer.SampleCount);
+    }
 
     protected override void OnRender(DrawingContext dc)
     {
@@ -67,6 +153,56 @@ public class WaveformControl : FrameworkElement
         }
 
         DrawWaveform(dc);
+
+        if (_dragging)
+        {
+            DrawSelection(
+                dc,
+                _mouseDown.X,
+                _mouseCurrent.X);
+        }
+        else if (HasSelection)
+        {
+            DrawSelection(
+                dc,
+                SampleToPixel(LoopStartSample),
+                SampleToPixel(LoopEndSample));
+        }
+    }
+
+    private double SampleToPixel(long sample)
+    {
+        if (AudioBuffer == null)
+            return 0;
+
+        return sample *
+               ActualWidth /
+               AudioBuffer.SampleCount;
+    }
+
+    private void DrawSelection(
+    DrawingContext dc,
+    double x1,
+    double x2)
+    {
+        double left = Math.Min(x1, x2);
+
+        double right = Math.Max(x1, x2);
+
+        dc.DrawRectangle(
+
+            new SolidColorBrush(
+                Color.FromArgb(70, 0, 120, 255)),
+
+            new Pen(
+                Brushes.DodgerBlue,
+                1),
+
+            new Rect(
+                left,
+                0,
+                right - left,
+                ActualHeight));
     }
 
     private void DrawBackground(DrawingContext dc)
