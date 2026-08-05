@@ -60,14 +60,29 @@ public partial class MainWindow : Window
 
     private void LoadAudio(string file)
     {
-        _buffer = AudioLoader.Load(file);
+        try
+        {
+            _buffer = AudioLoader.Load(file);
 
-        FileNameLabel.Text = _buffer.FileName;
+            FileNameLabel.Text = _buffer.FileName;
 
-        InfoLabel.Text =
-            $"{_buffer.Duration:mm\\:ss\\.fff}   " +
-            $"{_buffer.SampleRate} Hz   " +
-            $"{_buffer.Channels} canali";
+            InfoLabel.Text =
+                $"{_buffer.Duration:mm\\:ss\\.fff}   " +
+                $"{_buffer.SampleRate} Hz   " +
+                $"{_buffer.Channels} canali";
+
+            Waveform.AudioBuffer = _buffer;
+
+            Waveform.InvalidateVisual();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.Message,
+                "Errore caricamento audio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
 }

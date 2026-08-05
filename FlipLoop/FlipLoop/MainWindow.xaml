@@ -1,6 +1,7 @@
 ﻿<Window x:Class="FlipLoop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:FlipLoop.Controls"
         Title="FlipLoop"
         Height="720"
         Width="1200"
@@ -52,22 +53,38 @@
 
         <Grid>
 
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
             <StackPanel
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center">
+        Grid.Row="0"
+        Orientation="Horizontal"
+        Margin="10">
+
+                <TextBlock
+            Text="File:"
+            FontWeight="Bold"/>
 
                 <TextBlock
             x:Name="FileNameLabel"
-            FontSize="22"
-            Text="Nessun file"/>
+            Margin="5,0,20,0"/>
+
+                <TextBlock
+            Text="Info:"
+            FontWeight="Bold"/>
 
                 <TextBlock
             x:Name="InfoLabel"
-            Margin="0,20,0,0"
-            FontSize="16"
-            Text="Trascina un MP3 qui"/>
+            Margin="5,0,0,0"/>
 
             </StackPanel>
+
+            <controls:WaveformControl
+        x:Name="Waveform"
+        Grid.Row="1"
+        Margin="10"/>
 
         </Grid>
 
