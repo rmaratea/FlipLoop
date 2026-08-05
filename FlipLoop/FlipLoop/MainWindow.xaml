@@ -4,7 +4,10 @@
         Title="FlipLoop"
         Height="720"
         Width="1200"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        AllowDrop="True"
+        Drop="Window_Drop"
+        DragEnter="Window_DragEnter">
 
     <DockPanel>
 
@@ -49,18 +52,22 @@
 
         <Grid>
 
-            <Border Margin="20"
-                    BorderBrush="Gray"
-                    BorderThickness="1">
+            <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center">
 
                 <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="20"
-                    Foreground="Gray"
-                    Text="Waveform (arriva nello Sprint 2)"/>
+            x:Name="FileNameLabel"
+            FontSize="22"
+            Text="Nessun file"/>
 
-            </Border>
+                <TextBlock
+            x:Name="InfoLabel"
+            Margin="0,20,0,0"
+            FontSize="16"
+            Text="Trascina un MP3 qui"/>
+
+            </StackPanel>
 
         </Grid>
 
